@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,system-ui);font-size:14px;color:var(--color-text-primary,#222);background:transparent;padding:1rem}
+h2{font-size:18px;font-weight:500;margin-bottom:1rem}
+.hidden{display:none!important}
+
+/* LOGIN */
+.login-wrap{max-width:360px;margin:3rem auto}
+.login-card{background:var(--color-background-primary,#fff);border:0.5px solid var(--color-border-tertiary,#e0e0e0);border-radius:var(--border-radius-lg,12px);padding:2rem}
+.login-logo{text-align:center;margin-bottom:1.5rem}
+.login-logo i{font-size:36px;color:#0070C0}
+.login-logo p{font-size:13px;color:var(--color-text-secondary,#666);margin-top:.25rem}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:13px;color:var(--color-text-secondary,#666);margin-bottom:.35rem}
+.field input{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-secondary,#ccc);border-radius:var(--border-radius-md,8px);font-size:14px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#222)}
+.field input:focus{outline:none;border-color:#0070C0}
+.msg-error{background:#ffebee;color:#b71c1c;padding:.6rem 1rem;border-radius:var(--border-radius-md,8px);font-size:13px;margin-bottom:.75rem}
+
+/* APP */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:0.5px solid var(--color-border-tertiary,#e0e0e0)}
+.topbar-user{font-size:13px;color:var(--color-text-secondary,#666);display:flex;align-items:center;gap:6px}
+.step{display:none}
+.step.active{display:block}
+.upload-area{border:1.5px dashed var(--color-border-secondary,#ccc);border-radius:var(--border-radius-lg,12px);padding:2.5rem;text-align:center;cursor:pointer;transition:background .2s;background:var(--color-background-secondary,#f9f9f9);margin-bottom:1rem}
+.upload-area:hover{background:var(--color-background-tertiary,#f0f0f0)}
+.upload-area.loaded{border-color:#2e7d32;border-style:solid}
+.upload-area input{display:none}
+.upload-icon{font-size:32px;color:var(--color-text-secondary,#666);margin-bottom:.5rem}
+.upload-label{font-size:13px;color:var(--color-text-secondary,#666);margin-top:.4rem}
+.file-name{font-size:13px;font-weight:500;color:#2e7d32;margin-top:.5rem}
+.sheets-ok{display:none;gap:8px;margin-top:.5rem;font-size:12px;justify-content:center}
+.sheet-badge{background:#e8f5e9;color:#2e7d32;padding:2px 10px;border-radius:20px}
+.btn{padding:8px 20px;border:0.5px solid var(--color-border-secondary,#ccc);border-radius:var(--border-radius-md,8px);background:transparent;cursor:pointer;font-size:14px;color:var(--color-text-primary,#222);transition:background .15s}
+.btn:hover{background:var(--color-background-secondary,#f5f5f5)}
+.btn-primary{background:#0070C0;color:#fff;border-color:#0070C0;font-weight:500;width:100%}
+.btn-primary:hover{background:#005fa3}
+.btn-secondary{background:#0070C0;color:#fff;border-color:#0070C0;font-weight:500}
+.btn-secondary:hover{background:#005fa3}
+.btn-success{background:#2e7d32;color:#fff;border-color:#2e7d32}
+.btn-success:hover{background:#1b5e20}
+.btn-outline{background:transparent;color:var(--color-text-primary,#222)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.diff-bar{display:flex;align-items:center;gap:12px;padding:.75rem 1.25rem;border-radius:var(--border-radius-md,8px);margin-bottom:1rem;font-size:14px;font-weight:500;flex-wrap:wrap}
+.diff-ok{background:#e8f5e9;color:#2e7d32}
+.diff-off{background:#fff3e0;color:#e65100}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#0070C0;color:#fff;padding:6px 8px;text-align:left;font-weight:500;font-size:12px;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--color-background-secondary,#fafafa)}
+tbody td{padding:5px 8px;border-bottom:0.5px solid var(--color-border-tertiary,#eee);vertical-align:middle}
+tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+.editable-input{width:100px;text-align:right;padding:3px 6px;border:1px solid var(--color-border-secondary,#ccc);border-radius:4px;font-size:13px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#222)}
+.editable-input:focus{outline:none;border-color:#0070C0}
+tfoot td{font-weight:500;padding:6px 8px;background:var(--color-background-secondary,#f5f5f5);border-top:1.5px solid #0070C0}
+tfoot td.num{text-align:right}
+.section-title{background:#0070C0;color:#fff;padding:6px 10px;font-weight:500;font-size:13px}
+.table-wrap{overflow-x:auto;border-radius:var(--border-radius-md,8px);border:0.5px solid var(--color-border-tertiary,#e0e0e0);margin-bottom:1.5rem}
+.actions{display:flex;gap:10px;align-items:center;margin-top:1rem;flex-wrap:wrap}
+.msg{padding:.6rem 1rem;border-radius:var(--border-radius-md,8px);font-size:13px;margin-bottom:.75rem}
+.msg-error-app{background:#ffebee;color:#b71c1c}
+.steps-header{display:flex;align-items:center;gap:6px;margin-bottom:1.5rem;font-size:13px}
+.step-dot{display:flex;align-items:center;gap:6px;color:var(--color-text-secondary,#999)}
+.step-dot.active{color:#0070C0;font-weight:500}
+.step-dot.done{color:#2e7d32}
+.step-dot span{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:1.5px solid currentColor;flex-shrink:0}
+.sep{width:24px;height:1px;background:var(--color-border-tertiary,#ddd)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <i class="ti ti-plane" aria-hidden="true"></i>
+      <div style="font-size:15px;font-weight:500;margin-top:.5rem">Calculadora FEX</div>
+      <p>Lima Airport Partners</p>
+    </div>
+    <div id="loginError"></div>
+    <div class="field">
+      <label for="inputEmail">Correo corporativo</label>
+      <input type="email" id="inputEmail" placeholder="usuario@lima-airport.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="inputPass">Contraseña</label>
+      <input type="password" id="inputPass" placeholder="••••••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()" style="margin-top:.5rem">Ingresar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hidden">
+
+  <div class="topbar">
+    <div style="font-weight:500;font-size:15px;display:flex;align-items:center;gap:8px">
+      <i class="ti ti-plane" style="color:#0070C0" aria-hidden="true"></i>
+      Calculadora FEX
+    </div>
+    <div class="topbar-user">
+      <i class="ti ti-user-circle" aria-hidden="true"></i>
+      <span id="userLabel"></span>
+      <button class="btn btn-outline" style="padding:4px 12px;font-size:12px;margin-left:4px" onclick="doLogout()">
+        <i class="ti ti-logout" aria-hidden="true"></i> Salir
+      </button>
+    </div>
+  </div>
+
+  <div class="steps-header">
+    <div class="step-dot active" id="dot1"><span>1</span> Cargar archivo</div>
+    <div class="sep"></div>
+    <div class="step-dot" id="dot2"><span>2</span> Ajustar montos</div>
+    <div class="sep"></div>
+    <div class="step-dot" id="dot3"><span>3</span> Resultado</div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step active" id="step1">
+    <h2>Cargar archivo Excel</h2>
+    <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <i class="ti ti-file-spreadsheet upload-icon" aria-hidden="true"></i>
+      <div style="font-weight:500;font-size:15px">Haz clic para seleccionar el archivo</div>
+      <div class="upload-label">El archivo debe contener las hojas <strong>Locatarios</strong> y <strong>Facturas</strong></div>
+      <div class="upload-label" style="margin-top:.25rem">Formatos aceptados: .xlsx, .xls, .xml</div>
+      <div class="file-name" id="fileName"></div>
+      <div class="sheets-ok" id="sheetsOk"></div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.xml">
+    </div>
+    <div id="msgStep1"></div>
+    <div class="actions">
+      <button class="btn btn-secondary" id="btnProcesar" disabled onclick="procesarArchivo()">
+        <i class="ti ti-calculator" aria-hidden="true"></i> Procesar
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="step2">
+    <h2>Ajustar montos por tienda</h2>
+    <div id="diffBar" class="diff-bar diff-ok">
+      <span style="font-weight:400;opacity:.8">Diferencia:</span>
+      <span id="diffVal">$ 0.00</span>
+      <span style="font-size:12px;font-weight:400;opacity:.85" id="diffHint">El total está cuadrado ✓</span>
+    </div>
+    <div class="table-wrap">
+      <div class="section-title">Facturación razón social y tienda</div>
+      <table id="tblTiendas">
+        <thead>
+          <tr>
+            <th>Ítem</th>
+            <th>Razón social</th>
+            <th>Contrato</th>
+            <th>Tienda</th>
+            <th style="text-align:right">Ventas acum.</th>
+            <th style="text-align:right">Share</th>
+            <th style="text-align:right">Monto a pagar</th>
+            <th style="text-align:right">Facturación total (editable)</th>
+            <th style="text-align:right">Fact. total +1%</th>
+            <th>Categoría</th>
+          </tr>
+        </thead>
+        <tbody id="bodyTiendas"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4">Total</td>
+            <td class="num" id="ftVentas"></td>
+            <td></td>
+            <td class="num" id="ftMonto"></td>
+            <td class="num" id="ftFactTotal"></td>
+            <td class="num" id="ftFactMas1"></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="goStep(1)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Volver</button>
+      <button class="btn btn-secondary" id="btnContinuar" disabled onclick="goStep(3)">
+        <i class="ti ti-arrow-right" aria-hidden="true"></i> Continuar
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="step3">
+    <h2>Resultado: monto a facturar por razón social</h2>
+    <div class="table-wrap">
+      <div class="section-title">Por razón social</div>
+      <table id="tblRS">
+        <thead>
+          <tr>
+            <th>Razón social</th>
+            <th style="text-align:right">Facturación total ($)</th>
+            <th style="text-align:right">Fact. total +1% ($)</th>
+          </tr>
+        </thead>
+        <tbody id="bodyRS"></tbody>
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td class="num" id="ftRSFact"></td>
+            <td class="num" id="ftRSFact1"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="goStep(2)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Volver</button>
+      <button class="btn btn-success" onclick="exportarExcel()"><i class="ti ti-download" aria-hidden="true"></i> Exportar Excel</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script>
+
+// ── USUARIOS ──────────────────────────────────────────────
+const USERS = {
+  'lbenavente@lima-airport.com': 'lbenavente456',
+  'gugaz@lima-airport.com':      'gugaz456',
+  'iflores@lima-airport.com':    'iflores456',
+  'garcaya@lima-airport.com':    'garcaya456',
+  'rferreyros@lima-airport.com': 'rferreyros456',
+  'mcabrera@lima-airport.com':   'mcabrera456',
+  'jcabanillas@lima-airport.com':'jcabanillas456'
+};
+
+let currentUser = null;
+
+function doLogin() {
+  const email = document.getElementById('inputEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('inputPass').value;
+  if (USERS[email] && USERS[email] === pass) {
+    currentUser = email;
+    document.getElementById('loginError').innerHTML = '';
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('appView').classList.remove('hidden');
+    document.getElementById('userLabel').textContent = email;
+  } else {
+    document.getElementById('loginError').innerHTML =
+      '<div class="msg-error">Correo o contraseña incorrectos.</div>';
+  }
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('appView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('inputEmail').value = '';
+  document.getElementById('inputPass').value = '';
+}
+
+// Permitir Enter en el login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginView').classList.contains('hidden')) doLogin();
+});
+
+// ── CALCULADORA ───────────────────────────────────────────
+let tiendas = [], originalTarget = 0;
+
+const fmt    = n => n == null ? '' : n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtPct = n => (n*100).toFixed(4)+'%';
+const r2     = n => Math.round(n * 100) / 100;
+
+document.getElementById('fileInput').addEventListener('change', function() {
+  if (!this.files[0]) return;
+  document.getElementById('fileName').textContent = this.files[0].name;
+  document.getElementById('dropZone').classList.add('loaded');
+  document.getElementById('msgStep1').innerHTML = '';
+  document.getElementById('btnProcesar').disabled = false;
+});
+
+function readFile(file, cb) {
+  const isXML = file.name.toLowerCase().endsWith('.xml');
+  const r = new FileReader();
+  if (isXML) {
+    r.onload = e => {
+      try {
+        const ns = 'urn:schemas-microsoft-com:office:spreadsheet';
+        const doc = new DOMParser().parseFromString(e.target.result, 'text/xml');
+        const sheets = doc.getElementsByTagNameNS(ns, 'Worksheet');
+        const result = {};
+        for (let s of sheets) {
+          const name = s.getAttribute('ss:Name');
+          const rows = s.getElementsByTagNameNS(ns, 'Row');
+          const data = [];
+          for (let row of rows) {
+            const cells = row.getElementsByTagNameNS(ns, 'Cell');
+            const rowData = [];
+            let ci = 0;
+            for (let cell of cells) {
+              const idx = cell.getAttribute('ss:Index');
+              if (idx) ci = parseInt(idx) - 1;
+              const d = cell.getElementsByTagNameNS(ns, 'Data')[0];
+              rowData[ci] = d ? d.textContent : '';
+              ci++;
+            }
+            data.push(rowData);
+          }
+          result[name] = data;
+        }
+        cb(null, {type:'xml', data: result});
+      } catch(e) { cb(e); }
+    };
+    r.readAsText(file);
+  } else {
+    r.onload = e => {
+      try {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        cb(null, {type:'xlsx', wb});
+      } catch(e) { cb(e); }
+    };
+    r.readAsArrayBuffer(file);
+  }
+}
+
+function getSheet(parsed, sheetName) {
+  if (parsed.type === 'xml') return parsed.data[sheetName] || null;
+  const ws = parsed.wb.Sheets[sheetName];
+  return ws ? XLSX.utils.sheet_to_json(ws, {header:1, defval:''}) : null;
+}
+
+function procesarArchivo() {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) return;
+  readFile(file, (err, parsed) => {
+    if (err) { showMsg('msgStep1', 'Error leyendo el archivo: ' + err.message); return; }
+    const locRows  = getSheet(parsed, 'Locatarios');
+    const factRows = getSheet(parsed, 'Facturas');
+    if (!locRows)  { showMsg('msgStep1', 'No se encontró la hoja <strong>Locatarios</strong>.'); return; }
+    if (!factRows) { showMsg('msgStep1', 'No se encontró la hoja <strong>Facturas</strong>.'); return; }
+    const so = document.getElementById('sheetsOk');
+    so.innerHTML = '<span class="sheet-badge">✓ Locatarios</span><span class="sheet-badge">✓ Facturas</span>';
+    so.style.display = 'flex';
+    try { processData(locRows, factRows); }
+    catch(e) { showMsg('msgStep1', 'Error procesando datos: ' + e.message); }
+  });
+}
+
+function showMsg(id, msg) {
+  document.getElementById(id).innerHTML = `<div class="msg msg-error-app">${msg}</div>`;
+}
+
+function processData(locRows, factRows) {
+  const locFilas = locRows.slice(2).filter(r => r[0] && String(r[0]).trim());
+  const locData  = locFilas
+    .filter(r => r[1] !== '' && r[1] != null)
+    .map(r => ({
+      razon:     String(r[0]).trim(),
+      contrato:  r[1],
+      item:      Number(r[2]),
+      tienda:    String(r[3]).trim(),
+      ventas:    parseFloat(r[4]) || 0,
+      categoria: String(r[5]).trim()
+    }));
+
+  const factData     = factRows.slice(2).filter(r => r[0] && !isNaN(parseFloat(r[0]))).map(r => ({ total: parseFloat(r[11]) || 0 }));
+  const totalFacturas = factData.reduce((s,f) => s + f.total, 0);
+  const totalVentas   = locData.reduce((s,l) => s + l.ventas, 0);
+
+  tiendas = locData.map(l => {
+    const share = totalVentas > 0 ? l.ventas / totalVentas : 0;
+    const monto = share * totalFacturas;
+    return {...l, share, monto, factTotal: monto};
+  });
+
+  originalTarget = tiendas.reduce((s,t) => s + t.factTotal, 0);
+  renderStep2();
+  goStep(2);
+}
+
+function renderStep2() {
+  const tbody = document.getElementById('bodyTiendas');
+  tbody.innerHTML = '';
+  tiendas.forEach((t, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.item}</td>
+      <td>${t.razon}</td>
+      <td>${t.contrato}</td>
+      <td>${t.tienda}</td>
+      <td class="num">${fmt(t.ventas)}</td>
+      <td class="num">${fmtPct(t.share)}</td>
+      <td class="num">${fmt(t.monto)}</td>
+      <td style="text-align:right"><input class="editable-input" data-idx="${i}" value="${fmt(t.factTotal)}" type="text"></td>
+      <td class="num mas1">${fmt(t.factTotal/0.99)}</td>
+      <td>${t.categoria}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.editable-input').forEach(inp => {
+    inp.addEventListener('change', function() {
+      const idx = parseInt(this.getAttribute('data-idx'));
+      const raw = parseFloat(this.value.replace(/,/g,''));
+      if (isNaN(raw)) { this.value = fmt(tiendas[idx].factTotal); return; }
+      tiendas[idx].factTotal = raw;
+      this.value = fmt(raw);
+      this.closest('tr').querySelector('.mas1').textContent = fmt(raw/0.99);
+      updateFooter();
+      updateDiff();
+    });
+  });
+
+  updateFooter();
+  updateDiff();
+}
+
+function updateFooter() {
+  document.getElementById('ftVentas').textContent    = fmt(tiendas.reduce((s,t)=>s+t.ventas,0));
+  document.getElementById('ftMonto').textContent     = fmt(tiendas.reduce((s,t)=>s+t.monto,0));
+  document.getElementById('ftFactTotal').textContent = fmt(tiendas.reduce((s,t)=>s+t.factTotal,0));
+  document.getElementById('ftFactMas1').textContent  = fmt(tiendas.reduce((s,t)=>s+t.factTotal/0.99,0));
+}
+
+function updateDiff() {
+  const diff = tiendas.reduce((s,t)=>s+t.factTotal,0) - originalTarget;
+  const bar  = document.getElementById('diffBar');
+  const val  = document.getElementById('diffVal');
+  const hint = document.getElementById('diffHint');
+  const btn  = document.getElementById('btnContinuar');
+  if (Math.abs(diff) < 0.005) {
+    bar.className = 'diff-bar diff-ok';
+    val.textContent  = '$ 0.00';
+    hint.textContent = 'El total está cuadrado ✓';
+    btn.disabled = false;
+  } else if (diff > 0) {
+    bar.className = 'diff-bar diff-off';
+    val.textContent  = '+$ ' + fmt(diff);
+    hint.textContent = `Excede en $ ${fmt(diff)} — debes reducir ese monto en otra tienda`;
+    btn.disabled = true;
+  } else {
+    bar.className = 'diff-bar diff-off';
+    val.textContent  = '-$ ' + fmt(Math.abs(diff));
+    hint.textContent = `Faltan $ ${fmt(Math.abs(diff))} — debes aumentar ese monto en otra tienda`;
+    btn.disabled = true;
+  }
+}
+
+function buildRS() {
+  const map = {};
+  tiendas.forEach(t => {
+    if (!map[t.razon]) map[t.razon] = {razon:t.razon, factTotal:0, factMas1:0};
+    map[t.razon].factTotal += t.factTotal;
+    map[t.razon].factMas1  += t.factTotal / 0.99;
+  });
+  return Object.values(map);
+}
+
+function renderStep3() {
+  const rs    = buildRS();
+  const tbody = document.getElementById('bodyRS');
+  tbody.innerHTML = '';
+  let tF=0, tF1=0;
+  rs.forEach(r => {
+    tF += r.factTotal; tF1 += r.factMas1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.razon}</td><td class="num">${fmt(r.factTotal)}</td><td class="num">${fmt(r.factMas1)}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('ftRSFact').textContent  = fmt(tF);
+  document.getElementById('ftRSFact1').textContent = fmt(tF1);
+}
+
+function goStep(n) {
+  if (!currentUser) return;
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).classList.toggle('active', i===n);
+    const dot = document.getElementById('dot'+i);
+    dot.classList.remove('active','done');
+    if (i===n) dot.classList.add('active');
+    else if (i<n) dot.classList.add('done');
+  });
+  if (n===3) renderStep3();
+}
+
+function applyStyles(ws, headers, dataRows) {
+  const headerStyle = {
+    font:      { bold: true, color: { rgb: 'FFFFFF' } },
+    fill:      { fgColor: { rgb: '0070C0' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border:    { top:{style:'thin',color:{rgb:'000000'}}, bottom:{style:'thin',color:{rgb:'000000'}}, left:{style:'thin',color:{rgb:'000000'}}, right:{style:'thin',color:{rgb:'000000'}} }
+  };
+  const cellBorder = { border: { top:{style:'thin',color:{rgb:'CCCCCC'}}, bottom:{style:'thin',color:{rgb:'CCCCCC'}}, left:{style:'thin',color:{rgb:'CCCCCC'}}, right:{style:'thin',color:{rgb:'CCCCCC'}} } };
+  const numStyle   = { numFmt: '#,##0.00', ...cellBorder };
+
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let C = range.s.c; C <= range.e.c; C++) {
+    const hc = XLSX.utils.encode_cell({r:0, c:C});
+    if (ws[hc]) ws[hc].s = headerStyle;
+  }
+  for (let R = 1; R <= range.e.r; R++) {
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const addr = XLSX.utils.encode_cell({r:R, c:C});
+      if (!ws[addr]) continue;
+      ws[addr].s = typeof ws[addr].v === 'number' ? numStyle : cellBorder;
+    }
+  }
+  ws['!cols'] = headers.map((h, ci) => {
+    let max = String(h).length;
+    dataRows.forEach(row => {
+      const v = row[ci];
+      const len = v == null ? 0 : typeof v === 'number' ? fmt(v).length : String(v).length;
+      if (len > max) max = len;
+    });
+    return { wch: max + 2 };
+  });
+}
+
+function exportarExcel() {
+  const wb = XLSX.utils.book_new();
+  const rs = buildRS();
+
+  const h1 = ['RAZÓN SOCIAL','CONTRATO','ÍTEM','TIENDA','VENTAS ACUM.','SHARE','MONTO A PAGAR','FACTURACIÓN TOTAL','FACT. TOTAL +1%','CATEGORÍA'];
+  const d1 = tiendas.map(t => [t.razon, t.contrato, t.item, t.tienda, r2(t.ventas), r2(t.share), r2(t.monto), r2(t.factTotal), r2(t.factTotal/0.99), t.categoria]);
+  const ws1 = XLSX.utils.aoa_to_sheet([h1, ...d1]);
+  applyStyles(ws1, h1, d1);
+  XLSX.utils.book_append_sheet(wb, ws1, 'Desglose por tienda');
+
+  const h2 = ['RAZÓN SOCIAL','FACTURACIÓN TOTAL ($)','FACT. TOTAL +1% ($)'];
+  const d2 = rs.map(r => [r.razon, r2(r.factTotal), r2(r.factMas1)]);
+  const ws2 = XLSX.utils.aoa_to_sheet([h2, ...d2]);
+  applyStyles(ws2, h2, d2);
+  XLSX.utils.book_append_sheet(wb, ws2, 'Por razón social');
+
+  XLSX.writeFile(wb, 'FEX_Resultado.xlsx');
+}
+</script>
+</body>
+</html>
